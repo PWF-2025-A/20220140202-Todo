@@ -10,10 +10,24 @@ class TodoController extends Controller
 {
     public function index()
     {
-        $todos = Todo::where('user_id', Auth::id())->get();
-         dd($todos);
-        return view('todo.index');
-    }
+        $todos = Todo::where('user_id', Auth::id())->orderBy('created_at', 'desc')->get();
+         
+         return view('todo.index', compact('todos'));
+     }
+ 
+     public function store(Request $request)
+     {
+         $request->validate([
+             'title' => 'required|string|max:25',
+         ]);
+ 
+         $todo = Todo::create([
+             'title' => ucfirst($request->title),
+             'user_id' => Auth::id(),
+         ]);
+ 
+         return redirect()->route('todo.index')->with('success', 'Todo created successfully.');
+     }
 
     public function create()
     {
