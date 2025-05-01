@@ -24,6 +24,17 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
     Route::resource('todo', TodoController::class)->except(['show']);
+    //Update Data– Complete dan Incomplete Todo
+    Route::patch('/todo{todo}/complete',[TodoController::class,'complete'])->name('todo.complete');
+    Route::patch('/todo/{todo}/incomplete', [TodoController:: class, 'uncomplete' ])->name('todo.uncomplete');
+    Route::delete('/todo', [TodoCOntroller::class, 'destroyCompleted'])->name('todo.deleteallcompleted');
+
+
+
+    Route::get('/user', [UserController::class, 'index'])->name('user.index');
+    Route::patch('/user/{user}/makeadmin', [UserController::class, 'makeadmin'])->name('user.makeadmin');
+    Route::patch('/user/{user}/removeadmin', [UserController::class, 'removeadmin'])->name('user.removeadmin');
+    Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
 });
 
 require __DIR__.'/auth.php';
