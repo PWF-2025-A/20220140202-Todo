@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Todo') }}
+            {{ __('Dashboard') }}
         </h2>
     </x-slot>
 
@@ -10,25 +10,47 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     {{ __("Edit Todo Page") }}
-                    
-                    <!-- Form Edit Todo Start -->
-                    <form method="POST" action="{{ route('todo.update', $todo) }}" class="mt-6">
+                </div>
+
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <form method="POST" action="{{ route('todo.update', $todo) }}">
                         @csrf
-                        @method('PATCH')
+                        @method('PUT')
 
                         <div class="mb-6">
                             <x-input-label for="title" :value="__('Title')" />
-                            <x-text-input 
-                                id="title" 
-                                name="title" 
-                                type="text" 
+                            <x-text-input
+                                id="title"
+                                name="title"
+                                type="text"
                                 class="mt-1 block w-full"
-                                :value="old('title', $todo->title)" 
-                                required 
-                                autofocus 
-                                autocomplete="title" 
+                                :value="old('title', $todo->title)"
+                                required
+                                autofocus
+                                autocomplete="title"
                             />
                             <x-input-error class="mt-2" :messages="$errors->get('title')" />
+                        </div>
+
+                        <div class="mb-6">
+                            <x-input-label for="category_id" :value="__('Category')" />
+                            <select
+                                id="category_id"
+                                name="category_id"
+                                class="mt-1 block w-full rounded-md shadow-sm border-gray-600 bg-gray-800 text-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-300"
+                            >
+                                <option value="" class="bg-gray-800 text-gray-100">-- Select Category --</option>
+                                @foreach($categories as $category)
+                                    <option 
+                                        value="{{ $category->id }}" 
+                                        {{ (old('category_id', $todo->category_id) == $category->id) ? 'selected' : '' }}
+                                        class="bg-gray-800 text-gray-100"
+                                    >
+                                        {{ $category->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('category_id')" />
                         </div>
 
                         <div class="flex items-center gap-4">
@@ -36,8 +58,6 @@
                             <x-cancel-button href="{{ route('todo.index') }}" />
                         </div>
                     </form>
-                    <!-- Form Edit Todo End -->
-
                 </div>
             </div>
         </div>

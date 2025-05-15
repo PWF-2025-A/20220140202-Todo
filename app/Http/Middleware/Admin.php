@@ -15,10 +15,11 @@ class Admin
      */
     public function handle(Request $request, Closure $next): Response
     {
-       
-        if ($request->user() && !$request->user()->is_admin) {
-            return $next($request);
-        }
-        return redirect()->route('/dashboard');
+        if (!$request->user() || !$request->user()->is_admin) {
+        return redirect()->route('dashboard');
+    }
+
+    // Jika admin, izinkan lanjut
+    return $next($request);
     }
 }

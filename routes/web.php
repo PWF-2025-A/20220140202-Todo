@@ -3,49 +3,46 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
-// Halaman awal
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Dashboard (perlu login dan verifikasi)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Group route yang memerlukan autentikasi
 Route::middleware('auth')->group(function () {
 
-    // Profile
+    // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Todo (akses umum)
-    Route::get('/todo', [TodoController::class, 'index'])->name('todo.index');
+    // Todo routes (gunakan resource dan tambahan custom jika perlu)
+    Route::resource('todo', TodoController::class)->except(['show']);
+    
     Route::patch('/todo/{todo}/complete', [TodoController::class, 'complete'])->name('todo.complete');
-    Route::patch('/todo/{todo}/uncomplete', [TodoController::class, 'uncomplete'])->name('todo.uncomplete');
-    Route::delete('/todo', [TodoController::class, 'destroyCompleted'])->name('todo.deleteallcompleted');
-    Route::delete('/todo/{todo}', [TodoController::class, 'destroy'])->name('todo.destroy');
+    Route::patch('/todo/{todo}/incomplete', [TodoController::class, 'uncomplete'])->name('todo.uncomplete');
+    Route::delete('/todo/completed/all', [TodoController::class, 'destroyCompleted'])->name('todo.deleteallcompleted');
 
-    // User (untuk tampilan daftar user, bisa dibatasi pakai policy atau middleware)
-    Route::get('/user', [UserController::class, 'index'])->name('user.index');
+    // Category routes
+    Route::get('categories', [CategoryController::class, 'index'])->name('category.index');
+    Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-    // Admin khusus
-    Route::middleware('admin')->group(function () {
-        Route::resource('todo', TodoController::class)->except(['show', 'index', 'destroy']);
-        Route::get('/todo/create', [TodoController::class, 'create'])->name('todo.create');
-        Route::post('/todo', [TodoController::class, 'store'])->name('todo.store');
-        Route::get('/todo/{todo}/edit', [TodoController::class, 'edit'])->name('todo.edit');
-        Route::put('/todo/{todo}', [TodoController::class, 'update'])->name('todo.update');
-
-        Route::patch('/user/{user}/makeadmin', [UserController::class, 'makeadmin'])->name('user.makeadmin');
-        Route::patch('/user/{user}/removeadmin', [UserController::class, 'removeadmin'])->name('user.removeadmin');
-        Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+    // Admin user management (admin-only routes)
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/user', [UserController::class, 'index'])->name('user.index');
+        Route::patch('/user/{data}/makeadmin', [UserController::class, 'makeadmin'])->name('user.makeadmin');
+        Route::patch('/user/{data}/removeadmin', [UserController::class, 'removeadmin'])->name('user.removeadmin');
+        Route::delete('/user/{data}', [UserController::class, 'destroy'])->name('user.destroy');
     });
 });
 
-// Routing autentikasi
 require __DIR__.'/auth.php';

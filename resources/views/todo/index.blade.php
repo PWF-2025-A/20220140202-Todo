@@ -58,6 +58,7 @@
 
                         <tr>
                             <th scope="col" class="px-6 py-3">Title</th>
+                            <th scope="col" class="px-6 py-3">Category</th>
                             <th scope="col" class="px-6 py-3">Status</th>
                             <th scope="col" class="px-6 py-3">Action</th>
                         </tr>
@@ -70,6 +71,9 @@
                                         {{ $data->title }}
                                     </a>
                                 </td>
+                                <td class="px-6 py-4">
+                                        {{ optional($data->category)->title ?? '-' }}
+                                    </td>
                                 <td class="px-6 py-4 md:block">
                                     @if (!$data->is_complete)
                                         <span class="inline-flex items-center bg-red-100 text-red-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-red-900 dark:text-red-300">
