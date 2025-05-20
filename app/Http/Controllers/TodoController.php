@@ -12,11 +12,11 @@ class TodoController extends Controller
 {
     public function index()
     {
-        $todos = Todo::where('user_id', Auth::id())
+        $todos = Todo::with('category')->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
              
-        $todosCompleted = Todo::where('user_id', auth()->user()->id)
+        $todosCompleted = Todo::with('category')->where('user_id', auth()->user()->id)
             ->where('is_done', true)  // Ganti is_complete jadi is_done
             ->count();
     
