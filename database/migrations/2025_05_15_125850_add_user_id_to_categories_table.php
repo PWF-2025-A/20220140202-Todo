@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-    Schema::table('categories', function (Blueprint $table) {
-        $table->unsignedBigInteger('user_id')->after('id');
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-    });
+        Schema::table('categories', function (Blueprint $table) {
+            // Tambahkan hanya jika kolom belum ada
+            if (!Schema::hasColumn('categories', 'user_id')) {
+                $table->unsignedBigInteger('user_id')->after('id');
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            }
+        });
     }
 
     /**
@@ -22,9 +25,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-    Schema::table('categories', function (Blueprint $table) {
-        $table->dropForeign(['user_id']);
-        $table->dropColumn('user_id');
-    });
+        Schema::table('categories', function (Blueprint $table) {
+            // Hapus foreign key hanya jika kolomnya ada
+            if (Schema::hasColumn('categories', 'user_id')) {
+                $table->dropForeign(['user_id']);
+                $table->dropColumn('user_id');
+            }
+        });
     }
 };

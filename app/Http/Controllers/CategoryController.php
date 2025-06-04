@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::withCount('todos')
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id())
             ->get();
 
         return view('categories.index', compact('categories'));
@@ -32,21 +33,16 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate(['title' => 'required']);
+        $request->validate([
+            'title' => 'required|max:255',
+        ]);
+
         Category::create([
             'user_id' => Auth::id(),
-            'title' => $request->title,
+            'title' => ucfirst($request->title),
         ]);
-        //return redirect()->route('category.index');
-        return redirect()->route('category.index')->with('success', 'Category created successfully.');
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        return redirect()->route('category.index')->with('success', 'Category created successfully.');
     }
 
     /**
@@ -54,15 +50,14 @@ class CategoryController extends Controller
      */
     public function edit(string $id)
     {
-        $category = Category::findOrFail($id); // Ambil kategori berdasarkan ID
-         // Check if the authenticated user is the owner of the category
-        if (auth()->user()->id == $category->user_id) {
-        // Proceed with the edit if the user is authorized
-        return view('categories.edit', compact('category'));
-        } else {
-        // Redirect with an error message if the user is not authorized
-        return redirect()->route('category.index')->with('danger', 'You are not authorized to edit this category!');
+        $category = Category::findOrFail($id);
+
+        // Check if the authenticated user is the owner
+        if (Auth::id() !== $category->user_id) {
+            return redirect()->route('category.index')->with('danger', 'You are not authorized to edit this category!');
         }
+
+        return view('categories.edit', compact('category'));
     }
 
     /**
@@ -70,43 +65,35 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Ambil kategori berdasarkan ID
-    $category = Category::findOrFail($id);
-          // Validasi data
-    $request->validate([
-        'title' => 'required|max:255',
-    ]);
+        $category = Category::findOrFail($id);
 
-    // Update kategori
-    $category->update([
-        'title' => ucfirst($request->title),
-    ]);
+        // Check ownership
+        if (Auth::id() !== $category->user_id) {
+            return redirect()->route('category.index')->with('danger', 'You are not authorized to update this category!');
+        }
 
-    // Redirect dengan pesan sukses
-    return redirect()->route('category.index')->with('success', 'Category updated successfully!');
+        $request->validate([
+            'title' => 'required|max:255',
+        ]);
+
+        $category->update([
+            'title' => ucfirst($request->title),
+        ]);
+
+        return redirect()->route('category.index')->with('success', 'Category updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    // public function destroy(string $id)
-    // {
-    //     $category->delete();
-    //     return redirect()->route('categories.index');
-    // }
     public function destroy(Category $category)
-{
-    // Cek apakah pengguna yang sedang login adalah pemilik kategori ini
-    if (auth()->user()->id == $category->user_id) {
-        // Jika ya, hapus kategori
+    {
+        if (Auth::id() !== $category->user_id) {
+            return redirect()->route('category.index')->with('danger', 'You are not authorized to delete this category!');
+        }
+
         $category->delete();
 
-        // Redirect dengan pesan sukses
         return redirect()->route('category.index')->with('success', 'Category deleted successfully!');
-    } else {
-        // Jika tidak, kembalikan ke halaman dengan pesan error
-        return redirect()->route('category.index')->with('danger', 'You are not authorized to delete this category!');
     }
-}
-
 }
